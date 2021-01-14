@@ -7,7 +7,6 @@
     function __construct($path = 'database')
     { // задаем папку для хранения файлов базы данных
       $this->path = $path;
-      // echo $this->path;
     }
 
     public function dBaseRequest($params)
@@ -32,17 +31,35 @@
           echo "Добавляем данные в таблицу";
         } else
         {
-          echo "Неправльный запрос";
+          $this->message = 'Некорректный запрос';
+          return $this->message;
         }
       }
     }
 
     private function tableCreate()
     { // Создаем новую таблицу
-      $handle = fopen('database/tables.txt', 'a+');
-      fwrite($handle, $this->name);
+      $bases = json_decode(file_get_contents('database/tables.txt')); // запрашиваем текущие базы
+      $max_id = 0;
+      if(!empty($bases))
+      {
+        foreach($bases as $base)
+        {
+          if($base->id > $max_id)
+          {
+            $max_id = $base->id;
+          }
+        }
+      }
+      // echo "Максимальный ID: ".$max_id;
+      $new_base = new stdClass();
+      $new_base->id = ++$max_id;
+      $new_base->name = $this->name;
+      $bases[] = $new_base;
+      $handle = fopen('database/tables.txt', 'w');
+      fwrite($handle, json_encode($bases));
       fclose($handle);
-      $this->message = 'Таблица '. $this->name .' успешно создана';
+      $this->message = 'Таблица "'. $this->name .'" успешно создана';
     }
 
     private function tableInsert($params)
@@ -54,6 +71,25 @@
     { // Выводим данные из таблицы
 
     }
+
+    public function showAllTables()
+    {
+      $bases = json_decode(file_get_contents('database/tables.txt'));
+      return $bases;
+    }
+
+    public function showTableContent($id)
+    {
+      $bases = json_decode(file_get_contents('database/tables.txt'));
+      foreach($bases as $base)
+      {
+        if($id == $base->id)
+        {
+          // print_r($base);
+          return $base;
+        }
+      }
+    }
   }
   $db = new Database();
 
@@ -64,11 +100,17 @@
   if(isset($_REQUEST['new-table']) || isset($_GET['new-table']) || isset($_POST['new-table'])) {
     // echo "показываем форму добавления новой таблицы";
     $show_form = 'show_new_table_form';
-    // $db->dBaseRequest('Запрос');
   }
   if(isset($_REQUEST['create-table']) || isset($_GET['create-table']) || isset($_POST['create-table'])) {
-    // echo "Создаем новую таблицу с названием: ". $_REQUEST['name'];
     $message = $db->dBaseRequest('CREATE TABLE '.$_REQUEST['name']);
+  }
+  if(isset($_REQUEST['db-request']) || isset($_GET['db-request']) || isset($_POST['db-request'])) {
+    $message = $db->dBaseRequest($_REQUEST['db-request']);
+  }
+  if(isset($_REQUEST['table-id']) || isset($_GET['table-id']) || isset($_POST['table-id'])) {
+    echo "Показываем Контент";
+    $content = $db->showTableContent($_REQUEST['table-id']);
+    print_r($content);
   }
 ?>
 <!DOCTYPE html>
@@ -96,9 +138,11 @@
 
         <div class="table-title fs-5 fs-sm-4 fs-lg-3 text-center py-1">Список таблиц</div>
 
-        <button class="btn btn-secondary my-1 py-1 mx-0" type="button" name="button">Тестовая</button>
-
-        <button class="btn btn-secondary my-1 py-1 mx-0" type="button" name="button">Последняя</button>
+        <?php
+          // Выводим существующие таблицы
+          $all_tables_name = $db->showAllTables();
+          if(!empty($all_tables_name)) {include 'includes/tables.php';}
+        ?>
 
       </form>
 
@@ -113,8 +157,7 @@
         </div>
 
         <?php
-
-          if(isset($message)) {echo "121rfge"; include 'includes/message.php';}
+          if(isset($message)) {include 'includes/message.php';}
           if(isset($show_form)) {include 'includes/create-table.php';}
         ?>
 
