@@ -29,6 +29,11 @@
         } else if (preg_match("/INSERT INTO /i", $params))
         {
           echo "Добавляем данные в таблицу";
+          $this->insert = explode(' ', preg_replace('/INSERT INTO /i', '', $params));
+          // print_r($this->insert);
+          $this->table_name = $this->insert['0'];
+          // pop до получения VALUE
+          print_r($this->insert);
         } else
         {
           $this->message = 'Некорректный запрос';
@@ -59,7 +64,39 @@
       $handle = fopen('database/tables.txt', 'w');
       fwrite($handle, json_encode($bases));
       fclose($handle);
+      // добавляем файл структуры БД
+      $structure = fopen('database/structure/'.$new_base->id.'.txt', 'w');
+      fclose($structure);
+      // добавляем файл контента БД
+      $content = fopen('database/content/'.$new_base->id.'.txt', 'w');
+      fclose($content);
       $this->message = 'Таблица "'. $this->name .'" успешно создана';
+    }
+
+    public function tableFieldCreate($id, $name)
+    {
+      // echo 'Создаем поле "'.$name.'" для таблицы с ID: '.$id;
+      $structure = json_decode(file_get_contents('database/structure/'.$id.'.txt'));
+      $max_id = 0;
+      if(!empty($structure))
+      {
+        foreach($structure as $field)
+        {
+          if($field->id > $max_id)
+          {
+            $max_id = $field->id;
+          }
+        }
+      }
+      $new_field = new stdClass();
+      $new_field->id = ++$max_id;
+      $new_field->name = $name;
+      $structure[] = $new_field;
+      $handle = fopen('database/structure/'.$id.'.txt', 'w');
+      fwrite($handle, json_encode($structure));
+      fclose($handle);
+      $this->message = 'Поле "'. $new_field->name .'" для таблицы "'. $id .'" успешно создано';
+      return $this->message;
     }
 
     private function tableInsert($params)
@@ -85,8 +122,18 @@
       {
         if($id == $base->id)
         {
-          // print_r($base);
-          return $base;
+          $data[] = $base;
+          $structure = json_decode(file_get_contents('database/structure/'.$base->id.'.txt'));
+          if(!empty($structure))
+          {
+            $data[] = $structure;
+          }
+          $content = json_decode(file_get_contents('database/content/'.$base->id.'.txt'));
+          if(!empty($content))
+          {
+            $data[] = $content;
+          }
+          return $data;
         }
       }
     }
@@ -108,9 +155,40 @@
     $message = $db->dBaseRequest($_REQUEST['db-request']);
   }
   if(isset($_REQUEST['table-id']) || isset($_GET['table-id']) || isset($_POST['table-id'])) {
-    echo "Показываем Контент";
     $content = $db->showTableContent($_REQUEST['table-id']);
-    print_r($content);
+  }
+  if(isset($_REQUEST['create-field']) || isset($_GET['create-field']) || isset($_POST['create-field'])) {
+    if($_REQUEST['name'] != ''){
+      $message = $db->tableFieldCreate($_REQUEST['create-field'], $_REQUEST['name']);
+      $content = $db->showTableContent($_REQUEST['create-field']);
+    }
+  }
+  if(isset($_REQUEST['insert-value']) || isset($_GET['insert-value']) || isset($_POST['insert-value'])) {
+    if(isset($_REQUEST['name'])) {
+      $message = $db->dBaseRequest('INSERT INTO '.$_REQUEST['name']);
+    } else {
+      $tables = json_decode(file_get_contents('database/tables.txt'));
+      $table_name = '';
+      foreach($tables as $table){
+        if($_REQUEST['insert-value'] == $table->id){
+          $table_name = $table->name;
+        }
+      }
+      $values = '';
+      foreach($_REQUEST as $key => $value){
+        $key = preg_replace('/field-id-/i', '', $key );
+        $structure = json_decode(file_get_contents('database/structure/'.$_REQUEST['insert-value'].'.txt'));
+        foreach($structure as $field){
+          if($key == $field->id){
+            $values .= $field->name.'=:'.$value.', ';
+          }
+        }
+      }
+      $values = rtrim($values, ', ');
+      $request_value = 'INSERT INTO '.$table_name.' VALUES '.$values;
+      // echo $request_value;
+      $message = $db->dBaseRequest($request_value);
+    }
   }
 ?>
 <!DOCTYPE html>
@@ -159,6 +237,7 @@
         <?php
           if(isset($message)) {include 'includes/message.php';}
           if(isset($show_form)) {include 'includes/create-table.php';}
+          if(isset($content)) {include 'includes/content.php';}
         ?>
 
         <form class="row flex-column align-content-center py-3 d-none" action="index.php" method="get">
