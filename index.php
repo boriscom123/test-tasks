@@ -1,14 +1,15 @@
 <?php
   class Database
   {
-    /**
-    *
-    */
+
     function __construct($path = 'database')
-    { // задаем папку для хранения файлов базы данных
+    {
       $this->path = $path;
       if(!file_exists($this->path.'/tables.json')){
         file_put_contents($this->path.'/tables.json', '', FILE_APPEND | LOCK_EX);
+      }
+      if(!file_exists($this->path.'/uid.json')){
+        file_put_contents($this->path.'/uid.json', '', FILE_APPEND | LOCK_EX);
       }
     }
 
@@ -19,30 +20,35 @@
         return "Пустой запрос";
       }
       else
-      { // Обрабатывам входящие параметры строки
+      {
+        $this->query = $params;
         if (preg_match('/CREATE TABLE /i', $params))
         {
           $this->name = preg_replace('/CREATE TABLE /i', '', $params);
-          // echo "Добавляем таблицу:".$this->name;
           $this->tableCreate($this->name);
           return $this->message;
         } else if (preg_match("/SELECT FROM /i", $params))
         {
-          echo "Выводим данные из таблицы";
+          $this->name = preg_replace('/SELECT FROM /i', '', $params);
+          return $this->tableSelect($this->name);
         } else if (preg_match("/INSERT INTO /i", $params))
         {
-          echo "Добавляем данные в таблицу";
           $this->insert = explode(' ', preg_replace('/INSERT INTO /i', '', $params));
-          // print_r($this->insert);
           $this->table_name = $this->insert['0'];
-          // pop до получения VALUE
+          $this->table_id = $this->getTableIdByName($this->insert['0']);
+          $content = json_decode(file_get_contents('database/content/'.$this->table_id.'.json'));
           $this->insert = strstr($params, ' VALUES ', );
           $this->insert = explode(', ', preg_replace('/ VALUES /i', '', $this->insert));
-          print_r($this->insert);
-
-          // foreach($this->insert as $key => $value){
-          //   echo 'Ключ: '. $key . ' Значение: '.$value;
-          // }
+          $new_value = new stdClass();
+          foreach($this->insert as $value){
+            $value = explode('=:', $value);
+            if(empty($value['1'])) {
+              $value['1'] = 'null';
+            }
+            $new_value->{$this->getFieldIdByName($this->table_id, $value['0'])} = $value['1'];
+          }
+          $content[] = $new_value;
+          file_put_contents('database/content/'.$this->table_id.'.json', json_encode($content), LOCK_EX);
         } else
         {
           $this->message = 'Некорректный запрос';
@@ -51,53 +57,77 @@
       }
     }
 
+    private function getTableIdByName($table_name)
+    {
+      $tables = json_decode(file_get_contents('database/tables.json'));
+      foreach($tables as $table){
+        if($table_name == $table->name){
+          return $table->id;
+        }
+      }
+      return false;
+    }
+
+    public function getTableNameById($table_id)
+    {
+      $tables = json_decode(file_get_contents('database/tables.json'));
+      foreach($tables as $table){
+        if($table_id == $table->id){
+          return $table->name;
+        }
+      }
+      return false;
+    }
+
     private function getFieldNameById($table_id, $field_id)
     {
       $structure = json_decode(file_get_contents('database/structure/'.$base->id.'.json'));
       foreach($structure as $field){
         if($field_id == $field->id){
           return $field->name;
-        } else {
-          return false;
         }
       }
+      return false;
+    }
+
+    private function getFieldIdByName($table_id, $field_name)
+    {
+      $structure = json_decode(file_get_contents('database/structure/'.$table_id.'.json'));
+      foreach($structure as $field){
+        if($field_name == $field->name){
+          return $field->id;
+        }
+      }
+      return false;
     }
 
     private function tableCreate()
-    { // Создаем новую таблицу
-      $bases = json_decode(file_get_contents('database/tables.json')); // запрашиваем текущие базы
+    {
+      $tables = json_decode(file_get_contents('database/tables.json'));
       $max_id = 0;
-      if(!empty($bases))
+      if(!empty($tables))
       {
-        foreach($bases as $base)
+        foreach($tables as $table)
         {
-          if($base->id > $max_id)
+          if($table->id > $max_id)
           {
-            $max_id = $base->id;
+            $max_id = $table->id;
           }
         }
       }
-      // echo "Максимальный ID: ".$max_id;
-      $new_base = new stdClass();
-      $new_base->id = ++$max_id;
-      $new_base->name = $this->name;
-      $bases[] = $new_base;
-      $handle = fopen('database/tables.json', 'w');
-      fwrite($handle, json_encode($bases));
-      fclose($handle);
-      // добавляем файл структуры БД
-      $structure = fopen('database/structure/'.$new_base->id.'.json', 'w');
-      fclose($structure);
-      // добавляем файл контента БД
-      $content = fopen('database/content/'.$new_base->id.'.json', 'w');
-      fclose($content);
+      $new_table = new stdClass();
+      $new_table->id = ++$max_id;
+      $new_table->name = $this->name;
+      $tables[] = $new_table;
+      file_put_contents('database/tables.json', json_encode($tables), LOCK_EX);
+      file_put_contents('database/structure/'.$new_table->id.'.json', '', LOCK_EX);
+      file_put_contents('database/content/'.$new_table->id.'.json', '', LOCK_EX);
       $this->message = 'Таблица "'. $this->name .'" успешно создана';
     }
 
-    public function tableFieldCreate($id, $name)
+    public function tableFieldCreate($table_id, $name)
     {
-      // echo 'Создаем поле "'.$name.'" для таблицы с ID: '.$id;
-      $structure = json_decode(file_get_contents('database/structure/'.$id.'.json'));
+      $structure = json_decode(file_get_contents('database/structure/'.$table_id.'.json'));
       $max_id = 0;
       if(!empty($structure))
       {
@@ -113,21 +143,40 @@
       $new_field->id = ++$max_id;
       $new_field->name = $name;
       $structure[] = $new_field;
-      $handle = fopen('database/structure/'.$id.'.json', 'w');
-      fwrite($handle, json_encode($structure));
-      fclose($handle);
-      $this->message = 'Поле "'. $new_field->name .'" для таблицы "'. $id .'" успешно создано';
+      file_put_contents('database/structure/'.$table_id.'.json', json_encode($structure), LOCK_EX);
+      $this->message = 'Поле "'. $new_field->name .'" для таблицы "'. $this->getTableNameById($table_id) .'" успешно создано';
+      $content = json_decode(file_get_contents('database/content/'.$table_id.'.json'));
+      if(!empty($content)){
+        foreach($content as $value){
+          $value->{$new_field->id} = 'null';
+          $new_content[] = $value;
+        }
+        file_put_contents('database/content/'.$table_id.'.json', json_encode($new_content), LOCK_EX);
+      }
       return $this->message;
     }
 
-    private function tableInsert($params)
-    { // Вставляем данные в таблицу
-
-    }
-
-    private function tableSelect($params)
-    { // Выводим данные из таблицы
-
+    private function tableSelect($table_name)
+    {
+      $tables = json_decode(file_get_contents('database/tables.json'));
+      foreach($tables as $table)
+      {
+        if($table_name == $table->name)
+        {
+          $data[] = $table;
+          $structure = json_decode(file_get_contents('database/structure/'.$table->id.'.json'));
+          if(!empty($structure))
+          {
+            $data[] = $structure;
+          }
+          $content = json_decode(file_get_contents('database/content/'.$table->id.'.json'));
+          if(!empty($content))
+          {
+            $data[] = $content;
+          }
+          return $data;
+        }
+      }
     }
 
     public function showAllTables()
@@ -136,20 +185,20 @@
       return $tables;
     }
 
-    public function showTableContent($id)
+    public function showTableContent($table_id)
     {
-      $bases = json_decode(file_get_contents('database/tables.json'));
-      foreach($bases as $base)
+      $tables = json_decode(file_get_contents('database/tables.json'));
+      foreach($tables as $table)
       {
-        if($id == $base->id)
+        if($table_id == $table->id)
         {
-          $data[] = $base;
-          $structure = json_decode(file_get_contents('database/structure/'.$base->id.'.json'));
+          $data[] = $table;
+          $structure = json_decode(file_get_contents('database/structure/'.$table->id.'.json'));
           if(!empty($structure))
           {
             $data[] = $structure;
           }
-          $content = json_decode(file_get_contents('database/content/'.$base->id.'.json'));
+          $content = json_decode(file_get_contents('database/content/'.$table->id.'.json'));
           if(!empty($content))
           {
             $data[] = $content;
@@ -168,10 +217,10 @@
     $message = $db->dBaseRequest('CREATE TABLE '.$_REQUEST['name']);
   }
   if(isset($_REQUEST['db-request']) || isset($_GET['db-request']) || isset($_POST['db-request'])) {
-    $message = $db->dBaseRequest($_REQUEST['db-request']);
+    $content = $db->dBaseRequest($_REQUEST['db-request']);
   }
   if(isset($_REQUEST['table-id']) || isset($_GET['table-id']) || isset($_POST['table-id'])) {
-    $content = $db->showTableContent($_REQUEST['table-id']);
+    $content = $db->dBaseRequest('SELECT FROM '.$db->getTableNameById($_REQUEST['table-id']));
   }
   if(isset($_REQUEST['create-field']) || isset($_GET['create-field']) || isset($_POST['create-field'])) {
     if($_REQUEST['name'] != ''){
@@ -233,7 +282,6 @@
         <div class="table-title fs-5 fs-sm-4 fs-lg-3 text-center py-1">Список таблиц</div>
 
         <?php
-          // Выводим существующие таблицы
           $all_tables_name = $db->showAllTables();
           if(!empty($all_tables_name)) {include 'includes/tables.php';}
         ?>
@@ -243,10 +291,17 @@
       <div class="table-content col-12 col-sm-9 py-3">
 
         <div class="">
-          <form class="d-flex flex-column justify-content-end mx-auto" action="index.php" method="get">
-            <p>Введите запрос к базе данных. Например: CREATE TABLE {table_name}</p>
-            <textarea class="w-100 p-3" name="db-request" placeholder="CREATE TABLE {table_name}"></textarea>
-            <button class="w-50 btn btn-success align-self-end my-2" type="submit" name="send-request">Отправить</button>
+          <form class="d-flex flex-column mx-auto" action="index.php" method="get">
+            <?php
+              if(empty($_REQUEST)){
+                echo '<p>Введите запрос к базе данных. Например: CREATE TABLE {table_name}</p>';
+                echo '<textarea class="w-100 p-3" name="db-request" placeholder="CREATE TABLE {table_name}"></textarea>';
+              } else {
+                echo '<p>Введите запрос к базе данных. Например: INSERT INTO {table_name} VALUES {name1}=:{value1}, {name2}=:{value2}</p>';
+                echo '<textarea class="w-100 p-3" name="db-request" placeholder="'.$db->query.'"></textarea>';
+              }
+            ?>
+            <button class="col-12 col-sm-3 btn btn-success align-self-end fs-5 my-2" type="submit" name="send-request">Отправить</button>
           </form>
         </div>
 
