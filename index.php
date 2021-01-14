@@ -37,7 +37,7 @@
           $this->table_name = $this->insert['0'];
           // pop до получения VALUE
           $this->insert = strstr($params, ' VALUES ', );
-          $this->insert = explode(' ', preg_replace('/ VALUES /i', '', $this->insert));
+          $this->insert = explode(', ', preg_replace('/ VALUES /i', '', $this->insert));
           print_r($this->insert);
 
           // foreach($this->insert as $key => $value){
