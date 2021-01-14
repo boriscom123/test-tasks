@@ -1,5 +1,5 @@
 <?php
-  print_r($content);
+  // print_r($content);
   if(count($content) == 1){
     echo 'Таблица "'.$content['0']->name.'" - пустая. Добавьте необходимые поля.';
     ?>
@@ -9,7 +9,7 @@
       </form>
     <?php
   } else {
-    echo "В таблице есть данные";
+    // echo "В таблице есть данные";
     ?>
       <form class="row py-1" action="index.php" method="get">
         <div class="d-flex flex-column flex-nowrap overflow-auto py-3">

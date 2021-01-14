@@ -7,6 +7,9 @@
     function __construct($path = 'database')
     { // задаем папку для хранения файлов базы данных
       $this->path = $path;
+      if(!file_exists($this->path.'/tables.json')){
+        file_put_contents($this->path.'/tables.json', '', FILE_APPEND | LOCK_EX);
+      }
     }
 
     public function dBaseRequest($params)
@@ -33,7 +36,13 @@
           // print_r($this->insert);
           $this->table_name = $this->insert['0'];
           // pop до получения VALUE
+          $this->insert = strstr($params, ' VALUES ', );
+          $this->insert = explode(' ', preg_replace('/ VALUES /i', '', $this->insert));
           print_r($this->insert);
+
+          // foreach($this->insert as $key => $value){
+          //   echo 'Ключ: '. $key . ' Значение: '.$value;
+          // }
         } else
         {
           $this->message = 'Некорректный запрос';
@@ -42,9 +51,21 @@
       }
     }
 
+    private function getFieldNameById($table_id, $field_id)
+    {
+      $structure = json_decode(file_get_contents('database/structure/'.$base->id.'.json'));
+      foreach($structure as $field){
+        if($field_id == $field->id){
+          return $field->name;
+        } else {
+          return false;
+        }
+      }
+    }
+
     private function tableCreate()
     { // Создаем новую таблицу
-      $bases = json_decode(file_get_contents('database/tables.txt')); // запрашиваем текущие базы
+      $bases = json_decode(file_get_contents('database/tables.json')); // запрашиваем текущие базы
       $max_id = 0;
       if(!empty($bases))
       {
@@ -61,14 +82,14 @@
       $new_base->id = ++$max_id;
       $new_base->name = $this->name;
       $bases[] = $new_base;
-      $handle = fopen('database/tables.txt', 'w');
+      $handle = fopen('database/tables.json', 'w');
       fwrite($handle, json_encode($bases));
       fclose($handle);
       // добавляем файл структуры БД
-      $structure = fopen('database/structure/'.$new_base->id.'.txt', 'w');
+      $structure = fopen('database/structure/'.$new_base->id.'.json', 'w');
       fclose($structure);
       // добавляем файл контента БД
-      $content = fopen('database/content/'.$new_base->id.'.txt', 'w');
+      $content = fopen('database/content/'.$new_base->id.'.json', 'w');
       fclose($content);
       $this->message = 'Таблица "'. $this->name .'" успешно создана';
     }
@@ -76,7 +97,7 @@
     public function tableFieldCreate($id, $name)
     {
       // echo 'Создаем поле "'.$name.'" для таблицы с ID: '.$id;
-      $structure = json_decode(file_get_contents('database/structure/'.$id.'.txt'));
+      $structure = json_decode(file_get_contents('database/structure/'.$id.'.json'));
       $max_id = 0;
       if(!empty($structure))
       {
@@ -92,7 +113,7 @@
       $new_field->id = ++$max_id;
       $new_field->name = $name;
       $structure[] = $new_field;
-      $handle = fopen('database/structure/'.$id.'.txt', 'w');
+      $handle = fopen('database/structure/'.$id.'.json', 'w');
       fwrite($handle, json_encode($structure));
       fclose($handle);
       $this->message = 'Поле "'. $new_field->name .'" для таблицы "'. $id .'" успешно создано';
@@ -111,24 +132,24 @@
 
     public function showAllTables()
     {
-      $bases = json_decode(file_get_contents('database/tables.txt'));
-      return $bases;
+      $tables = json_decode(file_get_contents('database/tables.json'));
+      return $tables;
     }
 
     public function showTableContent($id)
     {
-      $bases = json_decode(file_get_contents('database/tables.txt'));
+      $bases = json_decode(file_get_contents('database/tables.json'));
       foreach($bases as $base)
       {
         if($id == $base->id)
         {
           $data[] = $base;
-          $structure = json_decode(file_get_contents('database/structure/'.$base->id.'.txt'));
+          $structure = json_decode(file_get_contents('database/structure/'.$base->id.'.json'));
           if(!empty($structure))
           {
             $data[] = $structure;
           }
-          $content = json_decode(file_get_contents('database/content/'.$base->id.'.txt'));
+          $content = json_decode(file_get_contents('database/content/'.$base->id.'.json'));
           if(!empty($content))
           {
             $data[] = $content;
@@ -140,12 +161,7 @@
   }
   $db = new Database();
 
-  // if(isset($_GET) && (!empty($_GET))) {echo "GET: "; print_r($_GET); echo "<br>";}
-  // if(isset($_POST) && (!empty($_POST))) {echo "POST: "; print_r($_POST); echo "<br>";}
-  // if(isset($_REQUEST) && (!empty($_REQUEST))) {echo "REQUEST: "; print_r($_REQUEST); echo "<br>";}
-
   if(isset($_REQUEST['new-table']) || isset($_GET['new-table']) || isset($_POST['new-table'])) {
-    // echo "показываем форму добавления новой таблицы";
     $show_form = 'show_new_table_form';
   }
   if(isset($_REQUEST['create-table']) || isset($_GET['create-table']) || isset($_POST['create-table'])) {
@@ -167,7 +183,7 @@
     if(isset($_REQUEST['name'])) {
       $message = $db->dBaseRequest('INSERT INTO '.$_REQUEST['name']);
     } else {
-      $tables = json_decode(file_get_contents('database/tables.txt'));
+      $tables = json_decode(file_get_contents('database/tables.json'));
       $table_name = '';
       foreach($tables as $table){
         if($_REQUEST['insert-value'] == $table->id){
@@ -177,7 +193,7 @@
       $values = '';
       foreach($_REQUEST as $key => $value){
         $key = preg_replace('/field-id-/i', '', $key );
-        $structure = json_decode(file_get_contents('database/structure/'.$_REQUEST['insert-value'].'.txt'));
+        $structure = json_decode(file_get_contents('database/structure/'.$_REQUEST['insert-value'].'.json'));
         foreach($structure as $field){
           if($key == $field->id){
             $values .= $field->name.'=:'.$value.', ';
