@@ -1,0 +1,165 @@
+.main {
+  > h2 {
+    text-align: center;
+    margin: 35px auto;
+    font-size: 2.5em;
+    font-weight: 300;
+  }
+  > .search {
+    min-height: 35px;
+    flex-wrap: wrap;
+    @media (max-width: 950px) { flex-wrap: wrap; justify-content: space-around;}
+    > .select {
+      height: 35px;;
+      width: 100%;
+      max-width: 230px;
+      margin: 0 0 10px 0;
+      position: relative;
+      > select {
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        padding: 0 0 0 0.5em;
+        overflow: hidden;
+        background: none;
+        box-sizing: border-box;
+        display: flex;
+        border-radius: 6px;
+        border: 1px solid #706f6f;
+        -webkit-appearance: none;
+           -moz-appearance: none;
+                appearance: none;
+        position: relative;
+        z-index: 2;
+        cursor: pointer;
+      }
+      > .image {
+        position: absolute;
+        top: 50%;
+        right: 3%;
+        transform: translateY(-50%);
+        height: 10px;
+        width: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1;
+        > img {
+          height: 100%;
+          width: 100%;
+          -o-object-fit: cover;
+             object-fit: cover;
+        }
+      }
+    }
+    > .input {
+      height: 35px;
+      width: 100%;
+      max-width: 230px;
+      margin: 0 0 10px 0;
+      position: relative;
+      > input {
+        height: 100%;
+        width: 100%;
+        padding: 0 0 0 0.5em;
+        overflow: hidden;
+        background: none;
+        box-sizing: border-box;
+        display: flex;
+        border-radius: 6px;
+        border: 1px solid #706f6f;
+        position: relative;
+        z-index: 2;
+        cursor: text;
+      }
+      > button {
+        position: absolute;
+        top: 0;
+        right: 0;
+        height: 100%;
+        width: 15%;
+        box-sizing: border-box;
+        border-radius: 6px;
+        border: 1px solid #706f6f;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        z-index: 2;
+        transition: $transition;
+        > img {
+          height: 50%;
+          width: 50%;
+          -o-object-fit: cover;
+             object-fit: cover;
+        }
+      }
+    }
+  }
+  > .cards {
+    margin: 50px auto 0;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    > .card {
+      background-color: rgba(255,255,255,1);
+      min-height: 280px;
+      width: 100%;
+      max-width: 170px;
+      margin: 0 0 50px 0;
+      border: solid 1px #b5b5b5;
+      box-sizing: border-box;
+      overflow: hidden;
+      border-radius: 10px;
+      transition: $transition;
+      &:hover {
+        transform: scale(1.2);
+      }
+      > .image {
+        height: 50%;
+        width: 100%;
+        > img {
+          height: 100%;
+          width: 100%;
+          -o-object-fit: cover;
+             object-fit: cover;
+        }
+      }
+      > .info {
+        height: 50%;
+        width: 100%;
+        padding: 10px 15px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-sizing: border-box;
+        > p {
+          font-size: 0.9em;
+        }
+        > .title {
+          color: black;
+        }
+        > .grade {
+          color: grey;
+        }
+        > .genre {
+          color: silver;
+        }
+        > .meta {
+          > a {
+            color: #00aee6;
+            text-decoration: underline;
+            font-weight: 600;
+            font-size: 0.8em;
+          }
+        }
+        > button {
+          height: 25px;
+          width: 100%;
+          border: none;
+          border-radius: 5px;
+          color: rgba(255,255,255,1);
+        }
+      }
+    }
+  }
+}

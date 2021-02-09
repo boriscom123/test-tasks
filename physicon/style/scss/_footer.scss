@@ -1,0 +1,54 @@
+.footer {
+  background-color: #3c3c3c;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  > .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 0 10px;
+    @media (max-width: 850px) { flex-direction: column; padding: 10px 10px; }
+    > .copy {
+      flex-grow: 1;
+      @media (max-width: 850px) { text-align: center;}
+      > p {
+        color: #fff;
+        > a {
+          color: #fff;
+          &:hover {
+            text-decoration: underline;
+          }
+        }
+      }
+    }
+    > .socials {
+      display: flex;
+      justify-content: space-around;
+      width: 100%;
+      max-width: 320px;
+      @media (max-width: 850px) { margin: 20px 0;}
+      > a {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 30px;
+        width: 30px;
+        background-color: white;
+        border-radius: 50%;
+        transition: $transition;
+        &:hover {
+          transform: scale(1.2);
+        }
+        > img {
+          height: 60%;
+          width: 60%;
+          -o-object-fit: contain;
+             object-fit: contain;
+        }
+      }
+    }
+  }
+
+}

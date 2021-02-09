@@ -1,0 +1,105 @@
+.header {
+  min-height: 70px;
+  background-color: rgba(255,255,255,1);
+  position: relative;
+  @media (max-width: 820px) { min-height: 105px; }
+  @media (max-width: 500px) { min-height: 215px; }
+  > .header-content {
+    min-height: 70px;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: rgba(255,255,255,1);
+    box-shadow: 0 2px rgb(0 0 0 / 20%);
+    z-index: 99999;
+    > .header-scrollbar {
+      height: 5px;
+      width: 100%;
+      background-color: white;
+      > div {
+        height: 100%;
+        width: 0%;
+        background-color: rgba(0,193,255,1);
+        border-radius: 0 3px 3px 0;
+        transition: $transition;
+      }
+    }
+    > .header-info {
+      min-height: inherit;
+      flex-wrap: wrap;
+      justify-content: space-around;
+      padding: 0 10px;
+      @media (max-width: 820px) { padding: 0 10px 10px; }
+      > .header-logo {
+        flex-grow: 1;
+        @media (max-width: 820px) { justify-content: space-between; }
+        > .logo {
+          height: 50px;
+          width: 280px;
+          @media (max-width: 350px) { width: 200px;}
+          > img {
+            height: 100%;
+            width: 100%;
+            -o-object-fit: cover;
+               object-fit: cover;
+            @media (max-width: 350px) { -o-object-fit: contain; object-fit: contain;}
+          }
+        }
+        > .header-burger {
+          height: 25px;
+          min-height: 25px;
+          width: 35px;
+          min-width: 35px;
+          margin: 10px 0 0 20px;
+          background-color: white;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          cursor: pointer;
+          transition: $transition;
+          &:hover {
+            transform: scale(1.1);
+          }
+          > .line {
+            height: 20%;
+            width: 100%;
+            background-color: rgba(0,193,255,1);
+            border-radius: 20%;
+            transition: $transition;
+            &:hover {
+              background: rgb(0,187,235);
+              background: linear-gradient(to bottom,  rgba(0,187,235,1) 0%,rgba(0,79,229,1) 100%);
+              filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00bbeb', endColorstr='#004fe5',GradientType=0 );
+            }
+          }
+        }
+        > input[type=checkbox] {
+          display: none;
+          &:checked ~ .header-burger {
+            background-color: red;
+          }
+        }
+      }
+      > .header-links {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        @media (max-width: 500px) { flex-direction: column; }
+        > a {
+          height: 40px;
+          width: 150px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          margin: 0 5px;
+          border-radius: 10px;
+          color: white;
+          font-size: 1.2em;
+          font-weight: 400;
+          @media (max-width: 500px) { margin: 5px auto;}
+        }
+      }
+    }
+  }
+}

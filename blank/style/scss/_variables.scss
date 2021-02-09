@@ -1,0 +1,21 @@
+// @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+$mainColor: #f16d7f; // Розовый цвет
+$alterColor: #f6f6f6; // Серый цвет
+$bgColor: lightblue; // Белый цвет
+$fontFamily: 'Roboto', sans-serif;
+$fontSize: 16px;
+$fontWeight: 300;
+$fontColor: #222222;
+$border: 1px solid #ececec;
+$cartTitleBg: rgba(248, 243, 244, 1); // цвет для заголовка на странице корзина
+$transition: 0.3s; // скорость для переходов
+$shadow: 0px 1px 3px 2px rgba(0,0,0,0.3);
+
+@mixin elHover($_color) { // цвет при наведении
+  background-color: darken($_color, 10%);
+}
+
+@mixin elActive($_color) { // цвет при нажатии
+  background-color: darken($_color, 20%);
+}
