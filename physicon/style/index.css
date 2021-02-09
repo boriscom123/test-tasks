@@ -349,6 +349,57 @@ input, select {
   -o-object-fit: cover;
   object-fit: cover;
 }
+.main > .price > h2 {
+  text-align: center;
+  margin: 10px auto;
+  font-size: 1.5em;
+  font-weight: 300;
+}
+.main > .price > .info {
+  height: 50px;
+  width: 200px;
+  margin: 0 auto;
+  border-radius: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.main > .price > .info > div {
+  height: 100%;
+  width: 50%;
+  background-color: none;
+  border: 1px solid grey;
+  border-radius: 5px;
+  margin: 0 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  color: black;
+}
+.main > .price > .info > div:hover {
+  color: white;
+  background: #00bbeb;
+  background: linear-gradient(to bottom, #00bbeb 0%, #004fe5 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr="#00bbeb", endColorstr="#004fe5",GradientType=0 );
+}
+.main > .price > .info > div:active {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15) inset, 0 0 6px rgba(0, 0, 0, 0.2) inset;
+}
+.main > .price > .info > .active {
+  color: white;
+  background: linear-gradient(to bottom, rgba(0, 193, 255, 0.75) 0%, #00c1ff 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr="#bf00c1ff", endColorstr="#00c1ff",GradientType=0 );
+  transition: 0.3s;
+}
+.main > .price > .info > .active:hover {
+  background: #00bbeb;
+  background: linear-gradient(to bottom, #00bbeb 0%, #004fe5 100%);
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr="#00bbeb", endColorstr="#004fe5",GradientType=0 );
+}
+.main > .price > .info > .active:active {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15) inset, 0 0 6px rgba(0, 0, 0, 0.2) inset;
+}
 .main > .cards {
   margin: 50px auto 0;
   flex-wrap: wrap;

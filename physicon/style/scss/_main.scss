@@ -96,6 +96,59 @@
       }
     }
   }
+  > .price {
+    > h2 {
+      text-align: center;
+      margin: 10px auto;
+      font-size: 1.5em;
+      font-weight: 300;
+    }
+    > .info {
+      height: 50px;
+      width: 200px;
+      margin: 0 auto;
+      border-radius: 5px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      > div {
+        height: 100%;
+        width: 50%;
+        background-color: none;
+        border: 1px solid grey;
+        border-radius: 5px;
+        margin: 0 5px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        color: black;
+        &:hover {
+        color: white;
+        background: rgb(0,187,235);
+        background: linear-gradient(to bottom,  rgba(0,187,235,1) 0%,rgba(0,79,229,1) 100%);
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00bbeb', endColorstr='#004fe5',GradientType=0 );
+        }
+        &:active {
+          box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15) inset, 0 0 6px rgba(0, 0, 0, 0.2) inset;
+        }
+      }
+      > .active {
+        color: white;
+        background: linear-gradient(to bottom,  rgba(0,193,255,0.75) 0%,rgba(0,193,255,1) 100%);
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#bf00c1ff', endColorstr='#00c1ff',GradientType=0 );
+        transition: $transition;
+        &:hover {
+        background: rgb(0,187,235);
+        background: linear-gradient(to bottom,  rgba(0,187,235,1) 0%,rgba(0,79,229,1) 100%);
+        filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00bbeb', endColorstr='#004fe5',GradientType=0 );
+        }
+        &:active {
+          box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.15) inset, 0 0 6px rgba(0, 0, 0, 0.2) inset;
+        }
+      }
+    }
+  }
   > .cards {
     margin: 50px auto 0;
     flex-wrap: wrap;
