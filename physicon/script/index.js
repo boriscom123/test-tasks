@@ -106,6 +106,16 @@ function scroll(){
 let scrollBarEl = document.getElementsByClassName('header-scrollbar');
 document.addEventListener('scroll',  function(){scroll(this)});
 
+// burger
+function showMenu(el){
+  if(checkboxEl.checked) {
+      checkboxEl.checked = false;
+  } else {
+    checkboxEl.checked = true;
+  }
+}
+let checkboxEl = document.getElementById('header-burger');
+checkboxEl.nextElementSibling.addEventListener('click', function (){showMenu(this)});
 // форма поиска
 function formAction(el){
   if(event.key == 'Enter') {
